@@ -1,7 +1,6 @@
 # Environnement et Secrets
 .env
 config.json
-app/config.js
 
 # IDEs et éditeurs
 .vscode/
