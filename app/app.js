@@ -426,6 +426,23 @@ async function init() {
   // Spin
   document.getElementById('btn-spin').addEventListener('click', launchSpin);
 
+  // Sync iOS
+  const btnSync = document.getElementById('btn-sync-ios');
+  if (btnSync) {
+    btnSync.addEventListener('click', () => {
+      if (!state.prenom || !state.deviceId) {
+        toast("Identifiant introuvable. Essaie de recharger la page.", "error");
+        return;
+      }
+      // On encode les informations en JSON
+      const payload = { prenom: state.prenom, device_id: state.deviceId };
+      const encodedPayload = encodeURIComponent(JSON.stringify(payload));
+      
+      // On redirige vers le raccourci iOS "OOM_Sync" en passant le payload
+      window.location.href = `shortcuts://run-shortcut?name=OOM_Sync&input=${encodedPayload}`;
+    });
+  }
+
   // Retour home
   document.getElementById('btn-back-home').addEventListener('click', async () => {
     await updateRestoCount();
