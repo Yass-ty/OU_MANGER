@@ -1,0 +1,23 @@
+# Environnement et Secrets
+.env
+config.json
+app/config.js
+
+# IDEs et éditeurs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Système
+.DS_Store
+Thumbs.db
+
+# Node.js
+node_modules/
+package-lock.json
+yarn.lock
+npm-debug.log*

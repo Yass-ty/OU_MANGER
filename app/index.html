@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Où On Mange ?" />
+  <meta name="theme-color" content="#0A0A0F" />
+  <title>Où On Mange ? 🍽️</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Fond animé -->
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- ─── VUE : ONBOARDING ─── -->
+  <div id="view-onboarding" class="view active">
+    <div class="onboarding-container">
+      <div class="onboarding-emoji">🍽️</div>
+      <h1 class="onboarding-title">Où On Mange ?</h1>
+      <p class="onboarding-subtitle">L'app qui décide à ta place (et de celle de tes amis).</p>
+      <div class="input-group">
+        <label for="input-prenom">Comment tu t'appelles ?</label>
+        <input id="input-prenom" type="text" placeholder="Ton prénom..." autocomplete="off" maxlength="30" />
+      </div>
+      <button id="btn-onboarding" class="btn-primary btn-full">
+        <span>C'est parti 🚀</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── VUE : HOME ─── -->
+  <div id="view-home" class="view">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <span class="header-emoji">🍽️</span>
+        <span class="header-title">Où On Mange ?</span>
+      </div>
+      <div class="header-actions">
+        <button id="btn-add-manual" class="icon-btn" title="Ajouter manuellement">+</button>
+        <button id="btn-goto-list" class="icon-btn" title="Voir la liste">☰</button>
+      </div>
+    </header>
+
+    <div class="home-content">
+      <!-- Greeting -->
+      <div class="greeting-card glass-card">
+        <p class="greeting-label">Bonsoir,</p>
+        <h2 class="greeting-name" id="greeting-name">Théo 👋</h2>
+      </div>
+
+      <!-- Sélection des amis -->
+      <div class="section">
+        <h3 class="section-title">Qui est là ce soir ?</h3>
+        <p class="section-sub">Sélectionne les amis présents</p>
+        <div id="friends-container" class="friends-grid">
+          <!-- Chips générées dynamiquement -->
+          <div class="loading-dots"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+
+      <!-- Filtre statut -->
+      <div class="section">
+        <h3 class="section-title">Dans la liste</h3>
+        <div class="filter-tabs">
+          <button class="filter-tab active" data-statut="a_tester">À tester</button>
+          <button class="filter-tab" data-statut="valide">Validés ⭐</button>
+          <button class="filter-tab" data-statut="all">Tous</button>
+        </div>
+        <p class="resto-count" id="resto-count">-- restos disponibles</p>
+      </div>
+
+      <!-- Bouton roulette -->
+      <div class="spin-section">
+        <button id="btn-spin" class="btn-spin" disabled>
+          <div class="btn-spin-inner">
+            <span class="spin-icon">🎲</span>
+            <span class="spin-text">LANCER LA ROULETTE</span>
+          </div>
+          <div class="btn-spin-glow"></div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VUE : SPIN ANIMATION ─── -->
+  <div id="view-spin" class="view">
+    <div class="spin-container">
+      <div class="spin-wheel-wrapper">
+        <div id="spin-wheel" class="spin-wheel">
+          <div class="spin-wheel-inner">
+            <span class="spin-wheel-emoji">🎰</span>
+          </div>
+        </div>
+        <div class="spin-ring"></div>
+      </div>
+      <p class="spin-label" id="spin-label">On choisit...</p>
+      <div class="spin-names" id="spin-names"></div>
+    </div>
+  </div>
+
+  <!-- ─── VUE : RÉSULTAT ─── -->
+  <div id="view-result" class="view">
+    <div class="result-container">
+      <div class="result-badge">🎉 Ce soir on va ici !</div>
+      <div class="result-card glass-card" id="result-card">
+        <div class="result-meta">
+          <span class="result-cuisine" id="result-cuisine">🍜 Asiatique</span>
+          <span class="result-prix" id="result-prix">€€</span>
+        </div>
+        <h2 class="result-name" id="result-name">Nom du restaurant</h2>
+        <div class="result-info">
+          <span class="result-ville" id="result-ville">📍 Paris</span>
+          <span class="result-by" id="result-by">Ajouté par Léa</span>
+        </div>
+
+        <!-- Embed vidéo -->
+        <div class="result-video-container" id="result-video-container">
+          <a id="result-video-link" href="#" target="_blank" class="video-preview-btn">
+            <span class="video-preview-icon">▶</span>
+            <span>Voir la vidéo</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="result-actions">
+        <button id="btn-on-y-va" class="btn-primary">
+          ✅ On y va !
+        </button>
+        <button id="btn-retirer" class="btn-secondary">
+          🎲 Retirer
+        </button>
+        <button id="btn-back-home" class="btn-ghost">
+          ← Retour
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VUE : LISTE ─── -->
+  <div id="view-list" class="view">
+    <header class="app-header">
+      <button id="btn-back-list" class="icon-btn">←</button>
+      <span class="header-title">Tous les restos</span>
+      <div style="width:40px"></div>
+    </header>
+    <!-- Tabs filtre -->
+    <div class="list-filter-tabs">
+      <button class="list-tab active" data-filter="a_tester">À tester</button>
+      <button class="list-tab" data-filter="deja_fait">Déjà fait</button>
+      <button class="list-tab" data-filter="valide">Validés</button>
+    </div>
+    <div id="list-container" class="list-container">
+      <div class="loading-dots"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+
+  <!-- ─── VUE : AJOUTER MANUELLEMENT ─── -->
+  <div id="view-add" class="view">
+    <header class="app-header">
+      <button id="btn-back-add" class="icon-btn">←</button>
+      <span class="header-title">Ajouter un resto</span>
+      <div style="width:40px"></div>
+    </header>
+    <div class="add-container">
+      <div class="glass-card add-form">
+        <div class="input-group">
+          <label>Nom du restaurant *</label>
+          <input id="add-nom" type="text" placeholder="Ex: Ramen House..." />
+        </div>
+        <div class="input-group">
+          <label>Type de cuisine</label>
+          <div class="cuisine-chips" id="cuisine-chips">
+            <button class="chip" data-val="Japonais">🍱 Japonais</button>
+            <button class="chip" data-val="Italien">🍕 Italien</button>
+            <button class="chip" data-val="Burger">🍔 Burger</button>
+            <button class="chip" data-val="Asiatique">🍜 Asiatique</button>
+            <button class="chip" data-val="Français">🥐 Français</button>
+            <button class="chip" data-val="Snack">🌮 Snack</button>
+            <button class="chip" data-val="Indien">🍛 Indien</button>
+            <button class="chip" data-val="Pizzeria">🍕 Pizzeria</button>
+          </div>
+          <input id="add-cuisine" type="text" placeholder="Ou écris le type..." />
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Ville</label>
+            <input id="add-ville" type="text" placeholder="Paris..." />
+          </div>
+          <div class="input-group">
+            <label>Prix</label>
+            <select id="add-prix">
+              <option value="">-</option>
+              <option value="low">€ Pas cher</option>
+              <option value="mid">€€ Moyen</option>
+              <option value="high">€€€ Gastronomique</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Lien vidéo (optionnel)</label>
+          <input id="add-lien" type="url" placeholder="https://tiktok.com/..." />
+        </div>
+        <button id="btn-save-add" class="btn-primary btn-full">
+          Sauvegarder 💾
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── TOAST ─── -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Appwrite SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.2/dist/iife/sdk.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
