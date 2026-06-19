@@ -48,6 +48,7 @@
         <span class="header-title">Où On Mange ?</span>
       </div>
       <div class="header-actions">
+        <button id="btn-goto-friends" class="icon-btn" title="Mes Amis">👥</button>
         <button id="btn-add-manual" class="icon-btn" title="Ajouter manuellement">+</button>
         <button id="btn-goto-list" class="icon-btn" title="Voir la liste">☰</button>
       </div>
@@ -223,10 +224,48 @@
       </div>
     </div>
   </div>
+  <!-- ─── VUE : MES AMIS ─── -->
+  <div id="view-friends" class="view">
+    <header class="app-header">
+      <button id="btn-back-friends" class="icon-btn">←</button>
+      <span class="header-title">Mes Amis</span>
+      <div style="width:40px"></div>
+    </header>
+    <div class="friends-view-content" style="padding: 20px; display:flex; flex-direction:column; gap:20px;">
+      
+      <!-- Mon Code / QR Code -->
+      <div class="glass-card" style="text-align: center;">
+        <h3>Ajouter un ami</h3>
+        <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 15px;">Fais scanner ce QR Code pour qu'on t'ajoute !</p>
+        <div id="my-qrcode" style="display:flex; justify-content:center; background:white; padding:15px; border-radius:10px; width: fit-content; margin: 0 auto;"></div>
+        <p style="margin-top: 15px; font-weight: bold; font-size: 1.2rem; letter-spacing: 2px;" id="my-friend-code">------</p>
+      </div>
+
+      <!-- Ajouter manuellement -->
+      <div class="glass-card">
+        <label style="font-size: 0.9rem; color: var(--muted); margin-bottom: 8px; display:block;">Ou tape le code d'un ami :</label>
+        <div style="display:flex; gap:10px;">
+          <input id="input-friend-code" type="text" placeholder="Ex: A7B9X2" style="text-transform: uppercase; letter-spacing: 2px;" maxlength="6" />
+          <button id="btn-add-friend" class="btn-primary" style="padding: 0 20px;">+</button>
+        </div>
+      </div>
+
+      <!-- Liste de mes amis -->
+      <div>
+        <h3 style="margin-bottom: 10px; font-size: 1.1rem;">Ma Liste</h3>
+        <div id="my-friends-list" style="display:flex; flex-direction:column; gap:10px;">
+          <!-- Items injectés via JS -->
+        </div>
+      </div>
+
+    </div>
+  </div>
 
   <!-- ─── TOAST ─── -->
   <div id="toast" class="toast"></div>
 
+  <!-- Librairie QR Code -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <!-- Appwrite SDK -->
   <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.2/dist/iife/sdk.js"></script>
   <script src="config.js"></script>

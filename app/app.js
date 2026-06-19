@@ -20,6 +20,9 @@ const { Query, ID } = Appwrite;
 const state = {
   prenom:           localStorage.getItem('oom_prenom') || null,
   deviceId:         localStorage.getItem('oom_device_id') || null,
+  userDocId:        null,
+  friendCode:       null,
+  friends:          [],
   selectedFriends:  [],
   statutFilter:     'a_tester',
   allUsers:         [],
@@ -93,9 +96,12 @@ async function setupOnboarding() {
         deviceId = (await r.text()).trim();
       } catch { deviceId = Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
+      // Génère un friend code
+      const friendCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
       // Crée le profil dans Appwrite
       await databases.createDocument(DB_ID, COL_USERS, ID.unique(), {
-        device_id: deviceId, prenom, avatar_color: colorFor(prenom)
+        device_id: deviceId, prenom, avatar_color: colorFor(prenom), friend_code: friendCode, friends: []
       });
 
       // Stocke localement
@@ -143,7 +149,26 @@ async function initHome() {
 
 async function loadFriends() {
   try {
-    const res = await databases.listDocuments(DB_ID, COL_USERS, [Query.limit(50)]);
+    // 1. Récupérer MON document utilisateur
+    if (state.deviceId) {
+      const myDocQuery = await databases.listDocuments(DB_ID, COL_USERS, [Query.equal('device_id', state.deviceId)]);
+      if (myDocQuery.documents.length > 0) {
+        const myDoc = myDocQuery.documents[0];
+        state.userDocId = myDoc.$id;
+        state.friendCode = myDoc.friend_code || '';
+        state.friends = myDoc.friends || [];
+      }
+    }
+
+    // 2. Charger les utilisateurs : Moi-même + mes amis
+    let queries = [];
+    const devicesToFetch = [state.deviceId, ...state.friends].filter(Boolean);
+    
+    // Si on a plus de 100 devices (limite Appwrite), on coupe, mais c'est très peu probable
+    queries.push(Query.equal('device_id', devicesToFetch.slice(0, 90)));
+    queries.push(Query.limit(100));
+
+    const res = await databases.listDocuments(DB_ID, COL_USERS, queries);
     state.allUsers = res.documents;
 
     const container = document.getElementById('friends-container');
@@ -165,7 +190,7 @@ async function loadFriends() {
       // Soi-même sélectionné par défaut
       if (user.prenom === state.prenom) {
         chip.classList.add('selected');
-        state.selectedFriends.push(user.prenom);
+        if (!state.selectedFriends.includes(user.prenom)) state.selectedFriends.push(user.prenom);
       }
 
       chip.addEventListener('click', () => {
@@ -182,11 +207,10 @@ async function loadFriends() {
       container.appendChild(chip);
     });
 
-    // Si pas d'amis encore, affiche juste soi-même
-    if (res.documents.length === 0) {
+    if (res.documents.length <= 1) {
       const msg = document.createElement('p');
       msg.style.color = 'var(--muted)'; msg.style.fontSize = '14px';
-      msg.textContent = 'Aucun ami encore — invite-les à installer l\'app !';
+      msg.textContent = 'Aucun ami ajouté. Va dans 👥 Mes Amis !';
       container.appendChild(msg);
     }
   } catch (e) {
@@ -416,7 +440,17 @@ async function init() {
   // Déjà connecté ?
   if (state.prenom && state.deviceId) {
     await initHome();
-    goTo('view-home');
+    
+    // Vérifier si un paramètre d'ajout d'ami est présent
+    const urlParams = new URLSearchParams(window.location.search);
+    const addCode = urlParams.get('add');
+    if (addCode) {
+      // Nettoyer l'URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      await processAddFriend(addCode);
+    } else {
+      goTo('view-home');
+    }
   } else {
     goTo('view-onboarding');
   }
@@ -485,6 +519,137 @@ async function init() {
   // Ajouter manuellement
   document.getElementById('btn-add-manual').addEventListener('click', () => goTo('view-add'));
   document.getElementById('btn-back-add').addEventListener('click', () => goTo('view-home'));
+
+  // Amis
+  const btnGotoFriends = document.getElementById('btn-goto-friends');
+  if (btnGotoFriends) btnGotoFriends.addEventListener('click', openFriendsView);
+  
+  const btnBackFriends = document.getElementById('btn-back-friends');
+  if (btnBackFriends) btnBackFriends.addEventListener('click', async () => {
+    await loadFriends();
+    await updateRestoCount();
+    goTo('view-home');
+  });
+
+  const btnAddFriend = document.getElementById('btn-add-friend');
+  if (btnAddFriend) btnAddFriend.addEventListener('click', () => {
+    const code = document.getElementById('input-friend-code').value.trim().toUpperCase();
+    if (code) processAddFriend(code);
+  });
+}
+
+// ─────────────────────────────────────────────────────────
+//  AMIS (Gérer mes amis)
+// ─────────────────────────────────────────────────────────
+function openFriendsView() {
+  goTo('view-friends');
+  
+  // Affiche le code
+  document.getElementById('my-friend-code').textContent = state.friendCode || '------';
+
+  // Génère le QR Code
+  const qrContainer = document.getElementById('my-qrcode');
+  qrContainer.innerHTML = ''; // Clear existing
+  if (state.friendCode && window.QRCode) {
+    const link = window.location.origin + window.location.pathname + '?add=' + state.friendCode;
+    new QRCode(qrContainer, { text: link, width: 150, height: 150 });
+  }
+
+  // Affiche la liste des amis actuels
+  const listEl = document.getElementById('my-friends-list');
+  listEl.innerHTML = '';
+  
+  const myFriends = state.allUsers.filter(u => state.friends.includes(u.device_id) && u.device_id !== state.deviceId);
+  
+  if (myFriends.length === 0) {
+    listEl.innerHTML = '<p style="color:var(--muted); font-size:14px; text-align:center;">Personne pour le moment.</p>';
+  } else {
+    myFriends.forEach(f => {
+      const card = document.createElement('div');
+      card.style.display = 'flex';
+      card.style.alignItems = 'center';
+      card.style.gap = '10px';
+      card.style.background = 'white';
+      card.style.padding = '10px';
+      card.style.borderRadius = '10px';
+
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar';
+      avatar.style.background = colorFor(f.prenom);
+      avatar.textContent = initials(f.prenom);
+
+      const name = document.createElement('div');
+      name.style.flex = '1';
+      name.textContent = f.prenom;
+
+      const btnRemove = document.createElement('button');
+      btnRemove.textContent = '❌';
+      btnRemove.style.background = 'none';
+      btnRemove.style.border = 'none';
+      btnRemove.style.cursor = 'pointer';
+      btnRemove.addEventListener('click', () => removeFriend(f.device_id));
+
+      card.appendChild(avatar);
+      card.appendChild(name);
+      card.appendChild(btnRemove);
+      listEl.appendChild(card);
+    });
+  }
+}
+
+async function processAddFriend(code) {
+  if (code === state.friendCode) { toast("Tu ne peux pas t'ajouter toi-même !", "error"); return; }
+  
+  const btn = document.getElementById('btn-add-friend');
+  if(btn) { btn.disabled = true; btn.textContent = '⏳'; }
+
+  try {
+    // 1. Chercher l'utilisateur avec ce code
+    const res = await databases.listDocuments(DB_ID, COL_USERS, [Query.equal('friend_code', code)]);
+    if (res.documents.length === 0) {
+      toast("Code introuvable !", "error");
+    } else {
+      const friend = res.documents[0];
+      const friendId = friend.device_id;
+      
+      if (state.friends.includes(friendId)) {
+        toast(`${friend.prenom} est déjà dans tes amis !`);
+      } else {
+        // Ajouter à ma liste
+        state.friends.push(friendId);
+        await databases.updateDocument(DB_ID, COL_USERS, state.userDocId, { friends: state.friends });
+        
+        // Ajouter à SA liste (réciprocité)
+        if (!friend.friends) friend.friends = [];
+        if (!friend.friends.includes(state.deviceId)) {
+          friend.friends.push(state.deviceId);
+          await databases.updateDocument(DB_ID, COL_USERS, friend.$id, { friends: friend.friends });
+        }
+
+        toast(`${friend.prenom} a été ajouté(e) !`, 'success');
+        document.getElementById('input-friend-code').value = '';
+        
+        // Mettre à jour l'état et l'UI
+        state.allUsers.push(friend); // On l'ajoute au cache local
+        openFriendsView();
+      }
+    }
+  } catch(e) {
+    console.error(e);
+    toast("Erreur d'ajout", "error");
+  }
+
+  if(btn) { btn.disabled = false; btn.textContent = '+'; }
+}
+
+async function removeFriend(deviceId) {
+  if (!confirm("Retirer cet ami ?")) return;
+  state.friends = state.friends.filter(id => id !== deviceId);
+  try {
+    await databases.updateDocument(DB_ID, COL_USERS, state.userDocId, { friends: state.friends });
+    toast("Ami retiré", "success");
+    openFriendsView();
+  } catch(e) { toast("Erreur", "error"); }
 }
 
 // ── Lancement ────────────────────────────────────────────
