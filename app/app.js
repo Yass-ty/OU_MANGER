@@ -460,6 +460,14 @@ async function init() {
   // Spin
   document.getElementById('btn-spin').addEventListener('click', launchSpin);
 
+  // Installer Raccourci
+  const btnInstall = document.getElementById('btn-install-shortcut');
+  if (btnInstall) {
+    btnInstall.addEventListener('click', () => {
+      window.open('https://www.icloud.com/shortcuts/4109be6d46f34dcaa2469465f07a886b', '_blank');
+    });
+  }
+
   // Sync iOS
   const btnSync = document.getElementById('btn-sync-ios');
   if (btnSync) {
