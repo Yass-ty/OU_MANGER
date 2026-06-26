@@ -530,6 +530,35 @@ async function init() {
     const code = document.getElementById('input-friend-code').value.trim().toUpperCase();
     if (code) processAddFriend(code);
   });
+
+  // Paramètres
+  const btnGotoSettings = document.getElementById('btn-goto-settings');
+  if (btnGotoSettings) btnGotoSettings.addEventListener('click', () => goTo('view-settings'));
+  
+  const btnBackSettings = document.getElementById('btn-back-settings');
+  if (btnBackSettings) btnBackSettings.addEventListener('click', () => goTo('view-home'));
+
+  // Installer Raccourci iOS (depuis Paramètres)
+  const btnInstallShortcut = document.getElementById('btn-install-shortcut');
+  if (btnInstallShortcut) {
+    btnInstallShortcut.addEventListener('click', () => {
+      window.open('https://www.icloud.com/shortcuts/4109be6d46f34dcaa2469465f07a886b', '_blank');
+    });
+  }
+
+  // Sync iOS (depuis Paramètres)
+  const btnSyncIos = document.getElementById('btn-sync-ios');
+  if (btnSyncIos) {
+    btnSyncIos.addEventListener('click', () => {
+      if (!state.prenom || !state.deviceId) {
+        toast("Identifiant introuvable. Essaie de recharger la page.", "error");
+        return;
+      }
+      const payload = { prenom: state.prenom, device_id: state.deviceId };
+      const encodedPayload = encodeURIComponent(JSON.stringify(payload));
+      window.location.href = `shortcuts://run-shortcut?name=OOM_Sync&input=${encodedPayload}`;
+    });
+  }
 }
 
 // ─────────────────────────────────────────────────────────

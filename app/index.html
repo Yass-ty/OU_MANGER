@@ -48,6 +48,7 @@
         <span class="header-title">Où On Mange ?</span>
       </div>
       <div class="header-actions">
+        <button id="btn-goto-settings" class="icon-btn" title="Paramètres">⚙️</button>
         <button id="btn-goto-friends" class="icon-btn" title="Mes Amis">👥</button>
         <button id="btn-add-manual" class="icon-btn" title="Ajouter manuellement">+</button>
         <button id="btn-goto-list" class="icon-btn" title="Voir la liste">☰</button>
@@ -257,6 +258,33 @@
         <div id="my-friends-list" style="display:flex; flex-direction:column; gap:10px;">
           <!-- Items injectés via JS -->
         </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── VUE : PARAMÈTRES ─── -->
+  <div id="view-settings" class="view">
+    <header class="app-header">
+      <button id="btn-back-settings" class="icon-btn">←</button>
+      <span class="header-title">Paramètres</span>
+      <div style="width:40px"></div>
+    </header>
+    <div style="padding: 20px; display:flex; flex-direction:column; gap:20px;">
+      
+      <div class="glass-card" style="padding: 20px;">
+        <h3 style="margin-bottom: 15px;">🍏 Options pour iPhone</h3>
+        <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 15px; line-height: 1.4;">
+          Apple ne permet pas l'intégration parfaite de la PWA au menu Partager. Si tu veux enregistrer un lien en 3 secondes depuis TikTok sur ton iPhone, tu peux utiliser ce Raccourci Apple.
+        </p>
+        
+        <button id="btn-install-shortcut" class="btn-primary btn-full" style="margin-bottom: 15px;">
+          📲 1. Installer le Raccourci
+        </button>
+        
+        <button id="btn-sync-ios" class="btn-secondary btn-full" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px;">
+          <span>🔗</span> 2. Lier mon compte
+        </button>
       </div>
 
     </div>
