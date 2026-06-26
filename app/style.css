@@ -462,3 +462,37 @@ body {
 }
 .toast.success { border-color: var(--success); color: var(--success); }
 .toast.error   { border-color: #EF4444; color: #EF4444; }
+
+/* ─── PWA IOS MODAL ─── */
+.pwa-modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  z-index: 1000; display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+.pwa-modal-overlay.active { opacity: 1; pointer-events: all; }
+.pwa-modal {
+  background: var(--surface); width: 100%; border-radius: var(--radius) var(--radius) 0 0;
+  padding: 30px 20px calc(var(--safe-bot) + 20px);
+  transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.pwa-modal-overlay.active .pwa-modal { transform: translateY(0); }
+.pwa-modal-header { font-size: 20px; font-weight: 800; margin-bottom: 15px; }
+.pwa-modal-text { font-size: 15px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+.pwa-modal-step { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-weight: 600; }
+.pwa-modal-icon { background: var(--glass); padding: 8px; border-radius: 8px; font-size: 18px; }
+
+/* ─── SHARE TARGET OVERLAY ─── */
+.share-target-overlay {
+  position: fixed; inset: 0; background: var(--bg);
+  z-index: 2000; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+.share-target-overlay.active { opacity: 1; pointer-events: all; }
+.share-target-content {
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
+}
+.share-target-content p {
+  font-size: 18px; font-weight: 600;
+  background: linear-gradient(135deg, var(--v1), var(--v2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}

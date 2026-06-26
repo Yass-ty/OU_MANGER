@@ -439,10 +439,17 @@ async function init() {
 
   // Déjà connecté ?
   if (state.prenom && state.deviceId) {
+    // Vérifier si c'est un partage (Share Target)
+    const urlParams = new URLSearchParams(window.location.search);
+    const isShare = urlParams.get('share');
+    if (isShare) {
+      const handled = await processShareTarget(urlParams);
+      if (handled) return; // Arrête l'init si on ferme la fenêtre
+    }
+
     await initHome();
     
     // Vérifier si un paramètre d'ajout d'ami est présent
-    const urlParams = new URLSearchParams(window.location.search);
     const addCode = urlParams.get('add');
     if (addCode) {
       // Nettoyer l'URL
@@ -455,35 +462,14 @@ async function init() {
     goTo('view-onboarding');
   }
 
+  // Configurer l'installation PWA
+  setupPWAInstall();
+
   // ── Events navigation ──
 
   // Spin
   document.getElementById('btn-spin').addEventListener('click', launchSpin);
 
-  // Installer Raccourci
-  const btnInstall = document.getElementById('btn-install-shortcut');
-  if (btnInstall) {
-    btnInstall.addEventListener('click', () => {
-      window.open('https://www.icloud.com/shortcuts/4109be6d46f34dcaa2469465f07a886b', '_blank');
-    });
-  }
-
-  // Sync iOS
-  const btnSync = document.getElementById('btn-sync-ios');
-  if (btnSync) {
-    btnSync.addEventListener('click', () => {
-      if (!state.prenom || !state.deviceId) {
-        toast("Identifiant introuvable. Essaie de recharger la page.", "error");
-        return;
-      }
-      // On encode les informations en JSON
-      const payload = { prenom: state.prenom, device_id: state.deviceId };
-      const encodedPayload = encodeURIComponent(JSON.stringify(payload));
-      
-      // On redirige vers le raccourci iOS "OOM_Sync" en passant le payload
-      window.location.href = `shortcuts://run-shortcut?name=OOM_Sync&input=${encodedPayload}`;
-    });
-  }
 
   // Retour home
   document.getElementById('btn-back-home').addEventListener('click', async () => {
@@ -658,6 +644,88 @@ async function removeFriend(deviceId) {
     toast("Ami retiré", "success");
     openFriendsView();
   } catch(e) { toast("Erreur", "error"); }
+}
+
+// ─────────────────────────────────────────────────────────
+//  PWA & SHARE TARGET
+// ─────────────────────────────────────────────────────────
+async function processShareTarget(urlParams) {
+  const sharedUrl = urlParams.get('share_url') || urlParams.get('share_text') || urlParams.get('text') || urlParams.get('url');
+  if (!sharedUrl) return false;
+
+  document.getElementById('share-target-overlay').classList.add('active');
+
+  try {
+    const data = {
+      lien_video:      sharedUrl,
+      ajoute_par:      state.prenom,
+      user_id:         state.deviceId,
+      nom_restaurant:  'Lien partagé 🔗',
+      statut:          'a_tester',
+      enrichi:         true,
+    };
+    await databases.createDocument(DB_ID, COL_RESTAURANTS, ID.unique(), data);
+    
+    // Tenter de fermer la fenêtre pour retourner sur l'app (TikTok/Insta) immédiatement (Android)
+    window.close();
+    
+    // Si window.close() est bloqué par le navigateur, on nettoie et on affiche l'appli normalement
+    setTimeout(() => {
+      document.getElementById('share-target-overlay').classList.remove('active');
+      toast('✅ Lien sauvegardé !', 'success');
+      window.history.replaceState({}, document.title, window.location.pathname);
+      goTo('view-home');
+    }, 1000);
+    
+    return true;
+  } catch (e) {
+    console.error(e);
+    document.getElementById('share-target-overlay').classList.remove('active');
+    toast('Erreur lors de la sauvegarde 😕', 'error');
+    window.history.replaceState({}, document.title, window.location.pathname);
+    return false;
+  }
+}
+
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btnPWA = document.getElementById('btn-install-pwa');
+  if (btnPWA) btnPWA.style.display = 'block';
+});
+
+function setupPWAInstall() {
+  const btnPWA = document.getElementById('btn-install-pwa');
+  if (!btnPWA) return;
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+
+  if (isIOS && !isStandalone) {
+    btnPWA.style.display = 'block';
+    btnPWA.addEventListener('click', () => {
+      document.getElementById('pwa-modal-overlay').classList.add('active');
+    });
+  } else {
+    btnPWA.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          btnPWA.style.display = 'none';
+        }
+        deferredPrompt = null;
+      }
+    });
+  }
+
+  const btnCloseModal = document.getElementById('btn-close-pwa-modal');
+  if (btnCloseModal) {
+    btnCloseModal.addEventListener('click', () => {
+      document.getElementById('pwa-modal-overlay').classList.remove('active');
+    });
+  }
 }
 
 // ── Lancement ────────────────────────────────────────────

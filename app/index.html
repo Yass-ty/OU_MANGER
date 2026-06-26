@@ -59,10 +59,6 @@
       <div class="greeting-card glass-card">
         <p class="greeting-label">Bonsoir,</p>
         <h2 class="greeting-name" id="greeting-name">Théo 👋</h2>
-        
-        <button id="btn-sync-ios" class="btn-secondary" style="margin-top: 15px; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 0.9rem; padding: 10px;">
-          <span>📱</span> Lier à mon Raccourci iOS
-        </button>
       </div>
 
       <!-- Sélection des amis -->
@@ -96,9 +92,9 @@
           <div class="btn-spin-glow"></div>
         </button>
 
-        <!-- Nouveau bouton pour le raccourci iOS -->
-        <button id="btn-install-shortcut" class="btn-primary btn-full" style="margin-top: 20px; background: rgba(255, 255, 255, 0.1); border: 1px solid var(--primary); color: var(--text-main);">
-          📲 Installer le Raccourci iPhone
+        <!-- Nouveau bouton pour l'installation PWA -->
+        <button id="btn-install-pwa" class="btn-primary btn-full" style="margin-top: 20px; background: rgba(255, 255, 255, 0.1); border: 1px solid var(--primary); color: var(--text-main); display: none;">
+          📲 Installer l'application
         </button>
       </div>
     </div>
@@ -269,11 +265,46 @@
   <!-- ─── TOAST ─── -->
   <div id="toast" class="toast"></div>
 
+  <!-- ─── PWA IOS MODAL ─── -->
+  <div id="pwa-modal-overlay" class="pwa-modal-overlay">
+    <div class="pwa-modal">
+      <div class="pwa-modal-header">Installer l'application</div>
+      <div class="pwa-modal-text">Installe l'application sur ton iPhone pour un accès rapide et pour pouvoir lui partager des liens directement depuis TikTok ou Instagram !</div>
+      <div class="pwa-modal-step">
+        <span class="pwa-modal-icon">📤</span>
+        <span>1. Appuie sur le bouton <b>Partager</b> en bas de l'écran.</span>
+      </div>
+      <div class="pwa-modal-step">
+        <span class="pwa-modal-icon">➕</span>
+        <span>2. Choisis <b>Sur l'écran d'accueil</b>.</span>
+      </div>
+      <button id="btn-close-pwa-modal" class="btn-secondary btn-full" style="margin-top: 20px;">J'ai compris</button>
+    </div>
+  </div>
+
+  <!-- ─── SHARE TARGET OVERLAY ─── -->
+  <div id="share-target-overlay" class="share-target-overlay">
+    <div class="share-target-content">
+      <div class="loading-dots"><span></span><span></span><span></span></div>
+      <p>Sauvegarde en cours...</p>
+    </div>
+  </div>
+
   <!-- Librairie QR Code -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <!-- Appwrite SDK -->
   <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.2/dist/iife/sdk.js"></script>
   <script src="config.js"></script>
+  
+  <!-- Enregistrement Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(console.error);
+      });
+    }
+  </script>
+  
   <script src="app.js"></script>
 </body>
 </html>
