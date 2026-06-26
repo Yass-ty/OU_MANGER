@@ -2,7 +2,7 @@
   "name": "Où On Mange ?",
   "short_name": "OOM",
   "description": "Tire au sort un restaurant avec tes amis en 3 secondes.",
-  "start_url": "/",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0A0A0F",
   "theme_color": "#0A0A0F",
@@ -22,7 +22,7 @@
     }
   ],
   "share_target": {
-    "action": "/?share=1",
+    "action": "./index.html?share=1",
     "method": "GET",
     "enctype": "application/x-www-form-urlencoded",
     "params": {
